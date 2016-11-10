@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+import curses
+
+from boatdclient import Boat
+
+
+def main(stdscr, doot):
+    pass
+
+
+if __name__ == '__main__':
+    curses.wrapper(main, [])
