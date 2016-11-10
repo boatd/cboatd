@@ -5,6 +5,13 @@ import sys
 
 from boatdclient import Boat
 
+boatd_text = '''▄▄                                            ▄▄
+██                              ██            ██
+██▄███▄    ▄████▄    ▄█████▄  ███████    ▄███▄██
+██▀  ▀██  ██▀  ▀██   ▀ ▄▄▄██    ██      ██▀  ▀██
+██    ██  ██    ██  ▄██▀▀▀██    ██      ██    ██
+███▄▄██▀  ▀██▄▄██▀  ██▄▄▄███    ██▄▄▄   ▀██▄▄███
+▀▀ ▀▀▀      ▀▀▀▀     ▀▀▀▀ ▀▀     ▀▀▀▀     ▀▀▀ ▀▀'''.splitlines()
 
 def main(stdscr, doot):
     boat = Boat(auto_update=False)
@@ -15,14 +22,22 @@ def main(stdscr, doot):
     while 1:
         boat.update()
 
+        for i, line in enumerate(boatd_text):
+            stdscr.addstr(i + 1, 2, line)
+
         fields = (
             ('heading', boat.heading),
             ('latitude', boat.position.lat),
             ('longitude', boat.position.long),
+            ('relative wind', boat.relative_wind),
+            ('absolute wind', boat.wind.direction),
         )
 
+        line_length = max([len(l[0]) for l in fields]) + 2
+
         for i, (label, value) in enumerate(fields):
-            stdscr.addstr(i + 2, 2, '{}:	'.format(label))
+            padding = ' ' * (line_length - len(label))
+            stdscr.addstr(i + 10, 2, '{}:{}'.format(label, padding))
             stdscr.addstr('{}'.format(value), curses.A_BOLD)
 
         stdscr.refresh()
