@@ -4,6 +4,7 @@ import curses
 import sys
 
 from boatdclient import Boat
+from boatdclient import Behaviour
 
 boatd_text = '''▄▄                                            ▄▄
 ██                              ██            ██
@@ -13,8 +14,19 @@ boatd_text = '''▄▄                                            ▄▄
 ███▄▄██▀  ▀██▄▄██▀  ██▄▄▄███    ██▄▄▄   ▀██▄▄███
 ▀▀ ▀▀▀      ▀▀▀▀     ▀▀▀▀ ▀▀     ▀▀▀▀     ▀▀▀ ▀▀'''.splitlines()
 
+
+def draw_fields(screen, fields, offset=0):
+    line_length = max([len(l[0]) for l in fields]) + 2
+
+    for i, (label, value) in enumerate(fields):
+        padding = ' ' * (line_length - len(label))
+        screen.addstr(i + offset, 2, '{}:{}'.format(label, padding))
+        screen.addstr('{}'.format(value), curses.A_BOLD)
+
+
 def main(stdscr, doot):
     boat = Boat(auto_update=False)
+    behaviour = Behaviour()
 
     curses.halfdelay(1)
     curses.curs_set(0)
@@ -23,22 +35,29 @@ def main(stdscr, doot):
         boat.update()
 
         for i, line in enumerate(boatd_text):
-            stdscr.addstr(i + 1, 2, line)
+            stdscr.addstr(i + 1, 6, line)
 
-        fields = (
-            ('heading', boat.heading),
-            ('latitude', boat.position.lat),
-            ('longitude', boat.position.long),
-            ('relative wind', boat.relative_wind),
-            ('absolute wind', boat.wind.direction),
+        box = curses.newwin(7, 72, 9, 2)
+        box.immedok(True)
+        box.border()
+
+        draw_fields(box,
+            (
+                ('heading', boat.heading),
+                ('latitude', boat.position.lat),
+                ('longitude', boat.position.long),
+                ('relative wind', boat.relative_wind),
+                ('absolute wind', boat.wind.direction),
+            ),
+            offset=1
         )
 
-        line_length = max([len(l[0]) for l in fields]) + 2
-
-        for i, (label, value) in enumerate(fields):
-            padding = ' ' * (line_length - len(label))
-            stdscr.addstr(i + 10, 2, '{}:{}'.format(label, padding))
-            stdscr.addstr('{}'.format(value), curses.A_BOLD)
+        draw_fields(stdscr,
+            (
+                ('behaviours', behaviour.list()),
+            ),
+            offset=28
+        )
 
         stdscr.refresh()
         try:
